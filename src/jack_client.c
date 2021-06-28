@@ -19,6 +19,7 @@ unsigned char note = 0;
 float velocity;
 
 string strings[128];
+int sustain = 0;
 
 void initialize_strings(jack_default_audio_sample_t srate)
 {
@@ -44,18 +45,31 @@ int process(jack_nframes_t nframes, void *arg)
 	for(i=0; i<event_count; i++)
 	{
 		jack_midi_event_get(&in_event, port_buf, i);
-		if(((*(in_event.buffer) & 0xf0)) == 0x90)
+		switch((*(in_event.buffer) & 0xf0))
 		{
-			note = *(in_event.buffer + 1);
-			velocity = *(in_event.buffer + 2);
-			excite_string(&strings[note], velocity);
+			case 0xb0:
+				if(in_event.buffer[1] == 64)
+				{
+					sustain = in_event.buffer[2];
+				}
+				break;
+			case 0x90:
+				note = *(in_event.buffer + 1);
+				velocity = *(in_event.buffer + 2);
+				excite_string(&strings[note], velocity);
+				break;
+			case 0x80:
+				note = *(in_event.buffer + 1);
+				if(sustain > 0)
+				{
+					sustain_string(&strings[note]);
+				}
+				else
+				{
+					stop_string(&strings[note]);
+				}
+				break;
 		}
-		else if(((*(in_event.buffer)) & 0xf0) == 0x80)
-		{
-			note = *(in_event.buffer + 1);
-			stop_string(&strings[note]);
-		}
-		
 	}
 	for(int i; i < nframes; i++)
 	{
@@ -63,9 +77,22 @@ int process(jack_nframes_t nframes, void *arg)
 	}
 	for(int i = 0; i < 128; i++)
 	{
-		if(strings[i].state == NOTE_ON)
+		switch(strings[i].state)
 		{
-			get_string_samples((float*)out, &strings[i], nframes);
+			case NOTE_ON:
+				get_string_samples((float*)out, &strings[i], nframes);
+				break;
+			case SUSTAIN:
+				if(sustain > 0)
+				{
+					get_string_samples((float*)out, &strings[i], nframes);
+				}
+				else
+				{
+					stop_string(&strings[i]);
+				}
+				
+				break;
 		}
 	}
 

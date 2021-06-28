@@ -10,7 +10,8 @@
 enum string_state
 {
 	NOTE_OFF,
-	NOTE_ON
+	NOTE_ON,
+	SUSTAIN
 };
 
 typedef struct string string;
@@ -30,3 +31,5 @@ void get_string_samples(float* buffer, string* s, int n_samples);
 void excite_string(string* s, int velocity);
 
 void stop_string(string* s);
+
+void sustain_string(string* s);

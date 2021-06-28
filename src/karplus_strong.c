@@ -33,3 +33,7 @@ void stop_string(string* s)
 {
 	s->state = NOTE_OFF;
 }
+
+void sustain_string(string* s){
+	s->state = SUSTAIN;
+}
