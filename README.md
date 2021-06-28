@@ -2,7 +2,6 @@
 an experimental digitally modeled piano 
 ## v0.1
 * uses Karplus-Strong Algorithm
-* does not support Sustain yet
 * only mono output from JACK Client 
 ## Dependencies
 * libjack-dev
