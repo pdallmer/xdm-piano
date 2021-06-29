@@ -1,4 +1,4 @@
-#include "karplus_strong.h"
+#include "piano_string.h"
 
 void initialize_string(string* s, float frequency, int sample_rate)
 {

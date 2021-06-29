@@ -9,7 +9,7 @@
 #include <jack/midiport.h>
 #include <time.h>
 
-#include "karplus_strong.h"
+#include "piano_string.h"
 
 jack_port_t *input_port;
 jack_port_t *output_port;
