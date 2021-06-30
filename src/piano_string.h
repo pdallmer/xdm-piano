@@ -19,7 +19,10 @@ typedef struct string string;
 struct string 
 {
 	int delay_line_length; 
-	int delay_line_out;
+	int nut;
+	int bridge;
+	int upper_hammer;
+	int lower_hammer;
 	float* delay_line;
 	enum string_state state;
 };
