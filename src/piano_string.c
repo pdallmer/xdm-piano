@@ -18,7 +18,7 @@ void get_string_samples(float* buffer, string* s, int n_samples)
 		s->bridge = (s->bridge + 1) % s->delay_line_length;
 		s->upper_hammer = (s->upper_hammer + 1) % s->delay_line_length;
 		s->lower_hammer = (s->lower_hammer + 1) % s->delay_line_length;
-		s->delay_line[s->nut] *= -0.995;
+		s->delay_line[s->nut] = -1 * (0.9 * s->delay_line[s->nut] + 0.1 * s->delay_line[(s->nut + 2) % s->delay_line_length]);
 		s->delay_line[s->bridge] *= -1;
 	}
 }
