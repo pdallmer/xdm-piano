@@ -18,11 +18,11 @@ typedef struct string string;
 
 struct string 
 {
+	float frequency;
 	int delay_line_length; 
-	int nut;
-	int bridge;
-	int upper_hammer;
-	int lower_hammer;
+	int delay_line_out;
+	int two_pole_out;
+	float* two_pole;
 	float* delay_line;
 	enum string_state state;
 };
