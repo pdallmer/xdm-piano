@@ -21,9 +21,7 @@ struct string
 	float frequency;
 	int delay_line_length; 
 	int delay_line_out;
-	int biquad_out;
 	float* delay_line;
-	float* biquad;
 	enum string_state state;
 };
 
