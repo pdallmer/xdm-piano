@@ -12,7 +12,7 @@ void get_string_samples(float* buffer, string* s, int n_samples)
 {
 	float g, b1, b2, a1, a2, r;
 
-	r = 0.3;
+	r = 0.9;
 	a2 = r * r;
 	g = a2;
 	a1 = -2 * r * cosf(2 * M_PI * 440);
@@ -29,7 +29,7 @@ void get_string_samples(float* buffer, string* s, int n_samples)
 											- a1 * s->delay_line[(s->delay_line_out -1) % s->delay_line_length] 
 											- a2 * s->delay_line[(s->delay_line_out - 2) % s->delay_line_length];
 		//damping
-		s->delay_line[s->delay_line_out] = 0.1 * s->delay_line[s->delay_line_out] + 0.9 * s->delay_line[(s->delay_line_out + 1) % s->delay_line_length];
+		s->delay_line[s->delay_line_out] = 0.3 * s->delay_line[s->delay_line_out] + 0.7 * s->delay_line[(s->delay_line_out + 1) % s->delay_line_length];
 		//increase counter
 		s->delay_line_out = (s->delay_line_out + 1) % s->delay_line_length;
 	}
