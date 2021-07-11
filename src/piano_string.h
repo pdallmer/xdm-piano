@@ -23,6 +23,11 @@ struct string
 	int delay_line_out;
 	float* delay_line;
 	enum string_state state;
+	//thiran vars
+	float x1;
+	float y1;
+	float m;
+	float a1;
 };
 
 void initialize_string(string* s, float frequency, int sample_rate);
