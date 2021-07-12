@@ -19,15 +19,10 @@ typedef struct string string;
 struct string 
 {
 	float frequency;
-	int delay_line_length; 
-	int delay_line_out;
-	float* delay_line;
+	int sample_rate;
 	enum string_state state;
-	//thiran vars
-	float x1;
-	float y1;
-	float m;
-	float a1;
+	delay_line *d;
+	one_zero* damping_filter;
 };
 
 void initialize_string(string* s, float frequency, int sample_rate);
