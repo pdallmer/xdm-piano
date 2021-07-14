@@ -8,28 +8,28 @@ float random_float(float abs_max)
 
 thiran* new_thiran(float m)
 {
-	thiran* new_thiran = (thiran*)malloc(sizeof(thiran*));
+	thiran* new_thiran = (thiran*)malloc(sizeof(thiran));
 	new_thiran->x1 = 0.0;
 	new_thiran->y1 = 0.0;
 	new_thiran->m = m;
-	new_thiran->a1 = -1 * ((new_thiran->m - 1 + 1) / (new_thiran->m - 1 + 1 + 1));
+	new_thiran->a1 = -1 * ((new_thiran->m - 1) / (new_thiran->m - 1 + 1)) * ((new_thiran->m - 1 + 1) / (new_thiran->m - 1 + 1 + 1));
 	return new_thiran;
 }
 
 delay_line* new_delay_line(float length)
 {
-	delay_line* new_delay_line = (delay_line*)malloc(sizeof(delay_line*));
+	delay_line* new_delay_line = (delay_line*)malloc(sizeof(delay_line));
 	new_delay_line->length = length;
 	new_delay_line->buffer_length = floor(length - 1);
 	new_delay_line->tuning_filter = new_thiran(length - new_delay_line->buffer_length);
-	new_delay_line->buffer = (float*)malloc(new_delay_line->buffer_length * sizeof(float));
 	new_delay_line->out = 0;
+	new_delay_line->buffer = (float*)malloc(new_delay_line->buffer_length * sizeof(float));
 	return new_delay_line;
 }
 
 one_zero *new_one_zero(float b0, float b1)
 {
-	one_zero *new_one_zero = (one_zero*)malloc(sizeof(one_zero*));
+	one_zero *new_one_zero = (one_zero*)malloc(sizeof(one_zero));
 	new_one_zero->b0 = b0;
 	new_one_zero->b1 = b1;
 	new_one_zero->x1 = 0;
@@ -38,38 +38,36 @@ one_zero *new_one_zero(float b0, float b1)
 
 one_pole *new_one_pole(float a1, float b0)
 {
-	one_pole *new_one_pole = (one_pole*)malloc(sizeof(one_pole*));
+	one_pole *new_one_pole = (one_pole*)malloc(sizeof(one_pole));
 	new_one_pole->a1 = a1;
 	new_one_pole->b0 = b0;
 	new_one_pole->y1 = 0;
 	return new_one_pole;
 }
 
-biquad *new_biquad(float g, float b1, float b2, float a1, float a2)
+fir *new_fir(int length, float *coefficients)
 {
-	biquad *new_biquad = (biquad*)malloc(sizeof(biquad));
-	new_biquad->g = g;
-	new_biquad->b1 = b1;
-	new_biquad->b2 = b2;
-	new_biquad->a1 = a1;
-	new_biquad->a2 = a2;
-	return new_biquad;
+	fir *new_fir = (fir*)malloc(sizeof(fir));
+	new_fir->length = length;
+	new_fir->buffer = (float*)malloc(length * sizeof(float));
+	new_fir->coefficients = coefficients;
+	new_fir->out = 0;
+	return new_fir;
 }
 
-biquad *new_low_pass_biquad(int fs, float fc, float q, biquad *f)
+waveguide *new_waveguide(float length)
 {
-	if(f == NULL)
-	{
-		f = new_biquad(0,0,0,0,0);
-	}
-    float k = tanf(M_PI * fc / fs);
-    float norm = 1 / (1 + k / q + k * k);
-    f->g = k * k * norm;
-    f->a1 = 2 * f->g;
-    f->a2 = f->g;
-    f->b1 = 2 * (k * k - 1) * norm;
-    f->b2 = (1 - k / q + k * k) * norm;
-    return f;
+	waveguide *new_waveguide = (waveguide*)malloc(sizeof(waveguide));
+	new_waveguide->upper = new_delay_line(length / 2.0);
+	new_waveguide->lower = new_delay_line(length / 2.0);
+	new_waveguide->damping_filter = new_one_zero(0.5, 0.5);
+	//input and output offset not parameterized yet
+	int offset = floor(length / 6);
+	new_waveguide->upper_input = offset;
+	new_waveguide->lower_input = new_waveguide->lower->buffer_length - offset;
+	new_waveguide->upper_output = new_waveguide->upper->buffer_length - offset;
+	new_waveguide->lower_output = offset;
+	return new_waveguide;
 }
 
 float thiran_peek(thiran *t, float x0)
@@ -112,12 +110,31 @@ float one_pole_process(one_pole* f, float x0)
 	return y;
 }
 
-float biquad_process(biquad *f, float x0)
+float fir_process(fir *f, float x0)
 {
-	float y = f->g * x0 + f->b1 * f->g * f->x1 + f->b2 * f->g * f->x2 - f->a1 * f->y1 - f->a2 * f->y2;
-	f->y2 = f->y1;
-	f->y1 = y;
-	f->x2 = f->x1;
-	f->x1 = x0;
+	float y = f->coefficients[f->out] * x0;
+	for (int i = 0; i < f->length; i++)
+	{
+		y += f->coefficients[(f->out + i + 1) % (f->length + 1)] * f->buffer[(f->out + i) % f->length];
+	}
+	f->out = (f->out + 1) % f->length;
 	return y;
+}
+
+float waveguide_process(waveguide *w)
+{
+	float y = w->upper->buffer[w->upper_output] + w->lower->buffer[w->lower_output];
+	float uin = -1 * delay_line_process(w->lower, -delay_line_peek(w->upper));
+	delay_line_process(w->upper, one_zero_process(w->damping_filter, uin));
+	w->upper_output = (w->upper_output + 1) % w->upper->buffer_length;
+	w->lower_output = (w->lower_output + 1) % w->lower->buffer_length;
+	w->upper_input = (w->upper_input + 1) % w->upper->buffer_length;
+	w->lower_input = (w->lower_input + 1) % w->lower->buffer_length;
+	return y;
+}
+
+void excite_waveguide(waveguide *w, float v)
+{
+	w->upper->buffer[w->upper_input] = v;
+	w->lower->buffer[w->lower_input] = v;
 }

@@ -18,15 +18,15 @@ jack_default_audio_sample_t note_on;
 unsigned char note = 0;
 float velocity;
 
-string strings[128];
+string strings[88];
 int sustain = 0;
 
 void initialize_strings(jack_default_audio_sample_t srate)
 {
 	float frequency;
-	for(int i = 0; i < 128; i++)
+	for(int i = 0; i < 88; i++)
 	{
-		frequency = (440.0) * pow(2, ((i - 69)/12.0));
+		frequency = (440.0) * pow(2, ((i + 21 - 69)/12.0));
 		initialize_string(&strings[i], frequency, srate);
 	}
 }
@@ -56,17 +56,17 @@ int process(jack_nframes_t nframes, void *arg)
 			case 0x90:
 				note = *(in_event.buffer + 1);
 				velocity = *(in_event.buffer + 2);
-				excite_string(&strings[note], velocity);
+				excite_string(&strings[note - 21], velocity);
 				break;
 			case 0x80:
 				note = *(in_event.buffer + 1);
 				if(sustain > 0)
 				{
-					sustain_string(&strings[note]);
+					sustain_string(&strings[note - 21]);
 				}
 				else
 				{
-					stop_string(&strings[note]);
+					stop_string(&strings[note - 21]);
 				}
 				break;
 		}
@@ -75,26 +75,23 @@ int process(jack_nframes_t nframes, void *arg)
 	{
 		out[i] = 0;
 	}
-	for(int i = 0; i < 128; i++)
+	for(int i = 0; i < 88; i++)
 	{
-		switch(strings[i].state)
+		if(strings[i].state == EXCITATION)
 		{
-			case NOTE_ON:
-				get_string_samples((float*)out, &strings[i], nframes);
-				break;
-			case SUSTAIN:
-				if(sustain > 0)
-				{
-					get_string_samples((float*)out, &strings[i], nframes);
-				}
-				else
-				{
-					stop_string(&strings[i]);
-				}
-				
-				break;
+			strings[i].state = NOTE_ON;
 		}
+		else
+		{
+			excite_string(&strings[i], 0);
+		}
+		if(strings[i].state == SUSTAIN && sustain == 0)
+		{
+			stop_string(&strings[note - 21]);
+		}
+		get_string_samples((float*)out, &strings[i], nframes);
 	}
+
 
 	return 0;      
 }
@@ -102,7 +99,6 @@ int process(jack_nframes_t nframes, void *arg)
 int srate(jack_nframes_t nframes, void *arg)
 {
 	printf("the sample rate is now %" PRIu32 "/sec\n", nframes);
-	initialize_strings((jack_default_audio_sample_t)nframes);
 	return 0;
 }
 

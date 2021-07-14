@@ -9,6 +9,7 @@
 
 enum string_state
 {
+	EXCITATION,
 	NOTE_OFF,
 	NOTE_ON,
 	SUSTAIN
@@ -21,8 +22,7 @@ struct string
 	float frequency;
 	int sample_rate;
 	enum string_state state;
-	delay_line *d;
-	one_zero* damping_filter;
+	waveguide *w;
 };
 
 void initialize_string(string* s, float frequency, int sample_rate);
