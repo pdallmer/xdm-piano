@@ -11,29 +11,31 @@ void initialize_string(string* s, float frequency, int sample_rate)
 
 void get_string_samples(float* buffer, string* s, int n_samples)
 {
-	float output;
+	float output, hpeak;
+	hpeak = 0.0;
 	for(int i = 0; i < n_samples; i++)
 	{
-		buffer[i] += waveguide_process(s->w);
+		output = waveguide_process(s->w);
+		hpeak += fabs(output);
+		buffer[i] += output;
 	}
+	if (hpeak < 0.0001) s->state = NOTE_OFF;
 }
 
 void excite_string(string* s, int velocity)
 {
-	s->state = EXCITATION;
-	if(velocity > 0){
-		s->w->damping_filter->b0 = 0.5;
-		s->w->damping_filter->b1 = 0.5;
-	}
+	s->state = NOTE_ON;
+	s->w->damping_filter->b0 = 0.5;
+	s->w->damping_filter->b1 = 0.5;
 	float v = (float)velocity / 128.0;
 	excite_waveguide(s->w, v);
 }
 
 void stop_string(string* s)
 {
+	s->state = DECAY;
 	s->w->damping_filter->b0 = 0.4;
 	s->w->damping_filter->b1 = 0.4;
-	s->state = NOTE_OFF;
 }
 
 void sustain_string(string* s){

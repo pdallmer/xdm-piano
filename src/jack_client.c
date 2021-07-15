@@ -77,19 +77,15 @@ int process(jack_nframes_t nframes, void *arg)
 	}
 	for(int i = 0; i < 88; i++)
 	{
-		if(strings[i].state == EXCITATION)
-		{
-			strings[i].state = NOTE_ON;
-		}
-		else
-		{
-			excite_string(&strings[i], 0);
-		}
 		if(strings[i].state == SUSTAIN && sustain == 0)
 		{
 			stop_string(&strings[note - 21]);
 		}
-		get_string_samples((float*)out, &strings[i], nframes);
+		if(strings[i].state != NOTE_OFF)
+		{
+			get_string_samples((float*)out, &strings[i], nframes);
+		}
+		
 	}
 
 

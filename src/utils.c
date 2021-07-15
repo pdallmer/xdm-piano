@@ -45,16 +45,6 @@ one_pole *new_one_pole(float a1, float b0)
 	return new_one_pole;
 }
 
-fir *new_fir(int length, float *coefficients)
-{
-	fir *new_fir = (fir*)malloc(sizeof(fir));
-	new_fir->length = length;
-	new_fir->buffer = (float*)malloc(length * sizeof(float));
-	new_fir->coefficients = coefficients;
-	new_fir->out = 0;
-	return new_fir;
-}
-
 waveguide *new_waveguide(float length)
 {
 	waveguide *new_waveguide = (waveguide*)malloc(sizeof(waveguide));
@@ -110,17 +100,6 @@ float one_pole_process(one_pole* f, float x0)
 	return y;
 }
 
-float fir_process(fir *f, float x0)
-{
-	float y = f->coefficients[f->out] * x0;
-	for (int i = 0; i < f->length; i++)
-	{
-		y += f->coefficients[(f->out + i + 1) % (f->length + 1)] * f->buffer[(f->out + i) % f->length];
-	}
-	f->out = (f->out + 1) % f->length;
-	return y;
-}
-
 float waveguide_process(waveguide *w)
 {
 	float y = w->upper->buffer[w->upper_output] + w->lower->buffer[w->lower_output];
@@ -135,6 +114,6 @@ float waveguide_process(waveguide *w)
 
 void excite_waveguide(waveguide *w, float v)
 {
-	w->upper->buffer[w->upper_input] = v;
-	w->lower->buffer[w->lower_input] = v;
+	w->upper->buffer[w->upper_input] += v;
+	w->lower->buffer[w->lower_input] += v;
 }
