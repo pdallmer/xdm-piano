@@ -11,10 +11,20 @@ void initialize_string(string* s, float frequency, int sample_rate)
 
 void get_string_samples(float* buffer, string* s, int n_samples)
 {
-	float output, hpeak;
+	float input, output, hpeak;
 	hpeak = 0.0;
 	for(int i = 0; i < n_samples; i++)
 	{
+		if(i < s->w->exciter->N)
+		{
+			input = hann_process(s->w->exciter);
+			s->w->upper->buffer[s->w->upper_input] += input;
+			s->w->lower->buffer[s->w->lower_input] += input;
+		}
+		else{
+			s->w->exciter->N = 0;
+			s->w->exciter->n = 0;
+		}
 		output = waveguide_process(s->w);
 		hpeak += fabs(output);
 		buffer[i] += output;

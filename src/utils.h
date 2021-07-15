@@ -7,6 +7,7 @@ typedef struct thiran thiran;
 typedef struct one_zero one_zero;
 typedef struct one_pole one_pole;
 typedef struct waveguide waveguide;
+typedef struct hann hann;
 
 //first order
 struct thiran
@@ -40,6 +41,13 @@ struct one_pole
 	float a1;
 };
 
+struct hann
+{
+	int max_N;
+	int N; 
+	int n;
+};
+
 //not universal, terminated string only
 struct waveguide
 {
@@ -50,6 +58,7 @@ struct waveguide
 	int lower_input;
 	int upper_output;
 	int lower_output;
+	hann *exciter;
 };
 
 float random_float(float abs_max);
@@ -61,6 +70,8 @@ delay_line *new_delay_line(float length);
 one_zero *new_one_zero(float b0, float b1);
 
 one_pole *new_one_pole(float a1, float b0);
+
+hann *new_hann(int N, int max_N);
 
 waveguide *new_waveguide(float length);
 
@@ -75,6 +86,8 @@ float delay_line_process(delay_line *d, float x0);
 float one_zero_process(one_zero *f, float x0);
 
 float one_pole_process(one_pole *f, float x0);
+
+float hann_process(hann *h);
 
 float waveguide_process(waveguide *w);
 

@@ -45,12 +45,22 @@ one_pole *new_one_pole(float a1, float b0)
 	return new_one_pole;
 }
 
+hann *new_hann(int N, int max_N)
+{
+	hann *new_hann = (hann*)malloc(sizeof(hann));
+	new_hann->N = N;
+	new_hann->max_N = max_N;
+	new_hann->n = 0;
+	return new_hann;
+}
+
 waveguide *new_waveguide(float length)
 {
 	waveguide *new_waveguide = (waveguide*)malloc(sizeof(waveguide));
 	new_waveguide->upper = new_delay_line(length / 2.0);
 	new_waveguide->lower = new_delay_line(length / 2.0);
 	new_waveguide->damping_filter = new_one_zero(0.5, 0.5);
+	new_waveguide->exciter = new_hann(0, 128);
 	//input and output offset not parameterized yet
 	int offset = floor(length / 6);
 	new_waveguide->upper_input = offset;
@@ -100,6 +110,14 @@ float one_pole_process(one_pole* f, float x0)
 	return y;
 }
 
+float hann_process(hann *h)
+{
+	float y = (((-(float)h->N -1)/ h->max_N) + 1) * sinf((2 * M_PI * h->n) / h->N);
+	y *= y;
+	h->n++;
+	return y;
+}
+
 float waveguide_process(waveguide *w)
 {
 	float y = w->upper->buffer[w->upper_output] + w->lower->buffer[w->lower_output];
@@ -114,6 +132,5 @@ float waveguide_process(waveguide *w)
 
 void excite_waveguide(waveguide *w, float v)
 {
-	w->upper->buffer[w->upper_input] += v;
-	w->lower->buffer[w->lower_input] += v;
+	w->exciter->N = (w->exciter->max_N * (1 - v)) + 1;
 }

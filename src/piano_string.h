@@ -9,6 +9,7 @@
 
 enum string_state
 {
+	EXCITATION,
 	DECAY,
 	NOTE_OFF,
 	NOTE_ON,
