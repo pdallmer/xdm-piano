@@ -9,10 +9,11 @@
 
 enum string_state
 {
-	DECAY,
 	NOTE_OFF,
 	NOTE_ON,
-	SUSTAIN
+	SUSTAIN,
+	DECAY,
+	EXCITATION
 };
 
 typedef struct string string;

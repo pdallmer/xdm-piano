@@ -15,6 +15,8 @@ void get_string_samples(float* buffer, string* s, int n_samples)
 	hpeak = 0.0;
 	for(int i = 0; i < n_samples; i++)
 	{
+		excite_waveguide(s->w, one_pole_process(s->w->input_filter, s->state == EXCITATION));
+		s->state = NOTE_ON;
 		output = waveguide_process(s->w);
 		hpeak += fabs(output);
 		buffer[i] += output;
@@ -24,11 +26,12 @@ void get_string_samples(float* buffer, string* s, int n_samples)
 
 void excite_string(string* s, int velocity)
 {
-	s->state = NOTE_ON;
+	s->state = EXCITATION;
 	s->w->damping_filter->b0 = 0.5;
 	s->w->damping_filter->b1 = 0.5;
 	float v = (float)velocity / 128.0;
-	excite_waveguide(s->w, v);
+	s->w->input_filter->b0 = v;
+	s->w->input_filter->a1 = 1 - (0.5 * v) * (0.5 * v);
 }
 
 void stop_string(string* s)

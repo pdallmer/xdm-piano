@@ -51,6 +51,7 @@ waveguide *new_waveguide(float length)
 	new_waveguide->upper = new_delay_line(length / 2.0);
 	new_waveguide->lower = new_delay_line(length / 2.0);
 	new_waveguide->damping_filter = new_one_zero(0.5, 0.5);
+	new_waveguide->input_filter = new_one_pole(0.9, 0);
 	//input and output offset not parameterized yet
 	int offset = floor(length / 6);
 	new_waveguide->upper_input = offset;

@@ -46,6 +46,7 @@ struct waveguide
 	delay_line *upper;
 	delay_line *lower;
 	one_zero *damping_filter;
+	one_pole *input_filter;
 	int upper_input;
 	int lower_input;
 	int upper_output;
