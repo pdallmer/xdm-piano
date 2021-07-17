@@ -21,7 +21,7 @@ void get_string_samples(float* buffer, string* s, int n_samples)
 		hpeak += fabs(output);
 		buffer[i] += output;
 	}
-	if (hpeak < 0.0001) s->state = NOTE_OFF;
+	if (hpeak < MUTE && s->w->damping_filter->b0 < 0.5) s->state = NOTE_OFF;
 }
 
 void excite_string(string* s, int velocity)

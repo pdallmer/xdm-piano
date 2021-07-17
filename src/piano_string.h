@@ -7,6 +7,8 @@
 
 #include "utils.h"
 
+#define MUTE 1e-16
+
 enum string_state
 {
 	NOTE_OFF,
