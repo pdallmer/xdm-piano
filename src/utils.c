@@ -45,13 +45,37 @@ one_pole *new_one_pole(float a1, float b0)
 	return new_one_pole;
 }
 
+dispersion_filter *new_dispersion_filter(int key, int m, float b)
+{
+	float kd, Cd, k1, k2, k3, m1, m2, m3, m4, a1, D, trt;
+	k1 = -0.00179;
+	k2 = -0.0233;
+	k3 = -2.93;
+	m1 = 0.0126;
+	m2 = 0.0606;
+	m3 = -0.00825;
+	m4 = 1.97;
+	kd = exp(k1*log(b)*log(b) + k2*log(b)+k3);
+	Cd = exp((m1*log(m)+m2)*log(b)+m3*log(m)+m4);
+	D = exp(Cd - key*kd);
+	dispersion_filter *new_dispersion_filter = (dispersion_filter*)malloc(sizeof(dispersion_filter));
+	new_dispersion_filter->f = (thiran**)malloc(m * sizeof(thiran*));
+	for (int i = 0; i < m; i++)
+	{
+		new_dispersion_filter->f[i] = new_thiran(D);
+	}
+	new_dispersion_filter->total_delay = m * D;
+	return new_dispersion_filter;
+}
+
 waveguide *new_waveguide(float length)
 {
 	waveguide *new_waveguide = (waveguide*)malloc(sizeof(waveguide));
 	new_waveguide->upper = new_delay_line(length / 2.0);
 	new_waveguide->lower = new_delay_line(length / 2.0);
 	new_waveguide->damping_filter = new_one_zero(0.5, 0.5);
-	new_waveguide->input_filter = new_one_pole(0.9, 0);
+	new_waveguide->input_filter = new_one_pole(-0.9, 0);
+	new_waveguide->input_smoothing_filter = new_one_zero(0.5, 0.5);
 	//input and output offset not parameterized yet
 	int offset = floor(length / 6);
 	new_waveguide->upper_input = offset;

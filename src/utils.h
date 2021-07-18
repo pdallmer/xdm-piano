@@ -6,6 +6,7 @@ typedef struct delay_line delay_line;
 typedef struct thiran thiran;
 typedef struct one_zero one_zero;
 typedef struct one_pole one_pole;
+typedef struct dispersion_filter dispersion_filter;
 typedef struct waveguide waveguide;
 
 //first order
@@ -40,6 +41,13 @@ struct one_pole
 	float a1;
 };
 
+struct dispersion_filter
+{
+	thiran **f;
+	float total_delay;
+};
+
+
 //not universal, terminated string only
 struct waveguide
 {
@@ -47,11 +55,13 @@ struct waveguide
 	delay_line *lower;
 	one_zero *damping_filter;
 	one_pole *input_filter;
+	one_zero *input_smoothing_filter;
 	int upper_input;
 	int lower_input;
 	int upper_output;
 	int lower_output;
 };
+
 
 float random_float(float abs_max);
 
@@ -62,6 +72,8 @@ delay_line *new_delay_line(float length);
 one_zero *new_one_zero(float b0, float b1);
 
 one_pole *new_one_pole(float a1, float b0);
+
+dispersion_filter *new_dispersion_filter(int key, int m, float b);
 
 waveguide *new_waveguide(float length);
 
