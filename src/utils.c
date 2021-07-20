@@ -68,14 +68,27 @@ dispersion_filter *new_dispersion_filter(int key, int m, float b)
 	return new_dispersion_filter;
 }
 
+smoothing_filter *new_smoothing_filter(int max_order)
+{
+	smoothing_filter *new_smoothing_filter = (smoothing_filter*)malloc(sizeof(smoothing_filter));
+	new_smoothing_filter->max_order = max_order;
+	new_smoothing_filter->X = (float*)malloc(max_order * sizeof(float));
+	new_smoothing_filter->y1 = 0;
+	for (int i = 0; i < max_order; i++)
+	{
+		new_smoothing_filter->X[i] = 0;
+	}
+	new_smoothing_filter->out = 0;
+	return new_smoothing_filter;
+}
+
 waveguide *new_waveguide(float length)
 {
 	waveguide *new_waveguide = (waveguide*)malloc(sizeof(waveguide));
 	new_waveguide->upper = new_delay_line(length / 2.0);
 	new_waveguide->lower = new_delay_line(length / 2.0);
 	new_waveguide->damping_filter = new_one_zero(0.5, 0.5);
-	new_waveguide->input_filter = new_one_pole(-0.9, 0);
-	new_waveguide->input_smoothing_filter = new_one_zero(0.5, 0.5);
+	new_waveguide->input_smoothing_filter = new_smoothing_filter(100);
 	//input and output offset not parameterized yet
 	int offset = floor(length / 6);
 	new_waveguide->upper_input = offset;
@@ -122,6 +135,21 @@ float one_pole_process(one_pole* f, float x0)
 {
 	float y = f->b0 * x0 - f->a1 * f->y1;
 	f->y1 = y;
+	return y;
+}
+
+float smoothing_filter_process(smoothing_filter *f, float x0)
+{
+	float y = 0;
+	f->X[f->out] = x0;
+	for (int i = 0; i < f->order; i++)
+	{
+		y += f->X[(f->out + f->max_order - i) % f->max_order];
+	}
+	y /= f->order;
+	y = f->b0 * y - f->a1 * f->y1;
+	f->y1 = y;
+	f->out = (f->out + 1) % f->max_order;
 	return y;
 }
 
