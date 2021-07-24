@@ -13,8 +13,8 @@ waveguide *new_waveguide(float length)
 	new_waveguide->bridge_impedance = 1.0;
 	new_waveguide->wave_impedance = 1e-3;
 	int offset = floor(length / 6);
-	new_waveguide->right_input = offset;
-	new_waveguide->left_input = new_waveguide->ll- offset;
+	new_waveguide->right_input = new_waveguide->rl - 1 - offset;
+	new_waveguide->left_input = new_waveguide->ll - 1 - offset;
 	new_waveguide->right_bridge = new_waveguide->rl - 1;
 	new_waveguide->left_bridge = new_waveguide->ll -1;
 	new_waveguide->right_nut = 0;
@@ -32,8 +32,8 @@ float waveguide_process(waveguide *w)
 	w->r[w->right_nut] = thiran_process(w->tuning_filter, -rin);
 	w->left_bridge = (w->left_bridge + 1) % w->ll;
 	w->left_nut = (w->left_nut + 1) % w->ll;
-	w->right_bridge = (w->right_bridge + 1) % w->rl;
-	w->right_nut = (w->right_nut + 1) % w->rl;
+	w->right_bridge = ((w->right_bridge + w->rl) - 1) % w->rl;
+	w->right_nut = ((w->right_nut + w->rl) - 1) % w->rl;
 	return y * 100;
 }
 
