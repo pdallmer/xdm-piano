@@ -5,7 +5,7 @@
 #include <string.h>
 #include <math.h>
 
-#include "utils.h"
+#include "waveguide.h"
 
 enum string_state
 {
