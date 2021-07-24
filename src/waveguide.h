@@ -7,13 +7,19 @@ typedef struct waveguide waveguide;
 
 struct waveguide
 {
-	delay_line *upper;
-	delay_line *lower;
-	one_zero *damping_filter;
-	int upper_input;
-	int lower_input;
-	int upper_output;
-	int lower_output;
+	float *r; //right going waves
+	float *l; //left going waves
+	int rl;
+	int ll;
+	thiran *tuning_filter;
+	float bridge_impedance;
+	float wave_impedance;
+	int right_input;
+	int left_input;
+	int right_bridge;
+	int left_bridge;
+	int right_nut;
+	int left_nut;
 };
 
 waveguide *new_waveguide(float length);

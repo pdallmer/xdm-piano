@@ -4,33 +4,41 @@
 waveguide *new_waveguide(float length)
 {
 	waveguide *new_waveguide = (waveguide*)malloc(sizeof(waveguide));
-	new_waveguide->upper = new_delay_line(length / 2.0);
-	new_waveguide->lower = new_delay_line(length / 2.0);
-	new_waveguide->damping_filter = new_one_zero(0.5, 0.5);
-	//input and output offset not parameterized yet
+	new_waveguide->rl = length / 2;
+	new_waveguide->ll = floor(length - new_waveguide->rl);
+	new_waveguide->ll = length - (new_waveguide->rl + new_waveguide->ll) < 1 ? new_waveguide->ll - 1 : new_waveguide->ll;
+	new_waveguide->tuning_filter = new_thiran(length - (new_waveguide->rl + new_waveguide->ll));
+	new_waveguide->r = (float*)malloc(new_waveguide->rl * sizeof(float));
+	new_waveguide->l = (float*)malloc(new_waveguide->ll * sizeof(float));
+	new_waveguide->bridge_impedance = 1.0;
+	new_waveguide->wave_impedance = 1e-3;
 	int offset = floor(length / 6);
-	new_waveguide->upper_input = offset;
-	new_waveguide->lower_input = new_waveguide->lower->buffer_length - offset;
-	new_waveguide->upper_output = new_waveguide->upper->buffer_length - offset;
-	new_waveguide->lower_output = offset;
+	new_waveguide->right_input = offset;
+	new_waveguide->left_input = new_waveguide->ll- offset;
+	new_waveguide->right_bridge = new_waveguide->rl - 1;
+	new_waveguide->left_bridge = new_waveguide->ll -1;
+	new_waveguide->right_nut = 0;
+	new_waveguide->left_nut = 0;	
 	return new_waveguide;
 }
 
 
 float waveguide_process(waveguide *w)
 {
-	float y = w->upper->buffer[w->upper_output] + w->lower->buffer[w->lower_output];
-	float uin = -1 * delay_line_process(w->lower, -delay_line_peek(w->upper));
-	delay_line_process(w->upper, one_zero_process(w->damping_filter, uin));
-	w->upper_output = (w->upper_output + 1) % w->upper->buffer_length;
-	w->lower_output = (w->lower_output + 1) % w->lower->buffer_length;
-	w->upper_input = (w->upper_input + 1) % w->upper->buffer_length;
-	w->lower_input = (w->lower_input + 1) % w->lower->buffer_length;
-	return y;
+	float p = (w->bridge_impedance - w->wave_impedance) / (w->bridge_impedance + w->wave_impedance);
+	float y = (1.0 - p) * w->r[w->right_bridge];
+	float rin = w->l[w->left_nut];
+	w->l[w->left_nut] = -p * w->r[w->right_bridge];
+	w->r[w->right_nut] = thiran_process(w->tuning_filter, -rin);
+	w->left_bridge = (w->left_bridge + 1) % w->ll;
+	w->left_nut = (w->left_nut + 1) % w->ll;
+	w->right_bridge = (w->right_bridge + 1) % w->rl;
+	w->right_nut = (w->right_nut + 1) % w->rl;
+	return y * 100;
 }
 
 void excite_waveguide(waveguide *w, float v)
 {
-	w->upper->buffer[w->upper_input] += v;
-	w->lower->buffer[w->lower_input] += v;
+	w->r[w->right_input] += v;
+	w->l[w->left_input] += v;
 }

@@ -25,8 +25,6 @@ void get_string_samples(float* buffer, string* s, int n_samples)
 void excite_string(string* s, int velocity)
 {
 	s->state = NOTE_ON;
-	s->w->damping_filter->b0 = 0.5;
-	s->w->damping_filter->b1 = 0.5;
 	float v = (float)velocity / 128.0;
 	excite_waveguide(s->w, v);
 }
@@ -34,8 +32,6 @@ void excite_string(string* s, int velocity)
 void stop_string(string* s)
 {
 	s->state = DECAY;
-	s->w->damping_filter->b0 = 0.4;
-	s->w->damping_filter->b1 = 0.4;
 }
 
 void sustain_string(string* s){
