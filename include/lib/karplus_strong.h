@@ -1,11 +1,5 @@
-#include <stdio.h>
-#include <errno.h>
-#include <unistd.h>
-#include <stdlib.h>
-#include <string.h>
-#include <math.h>
-
-#include "utils.h"
+#ifndef _KARPLUS_STRONG_H
+#define _KARPLUS_STRONG_H
 
 enum string_state
 {
@@ -33,3 +27,5 @@ void excite_string(string* s, int velocity);
 void stop_string(string* s);
 
 void sustain_string(string* s);
+
+#endif

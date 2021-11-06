@@ -1,4 +1,13 @@
-#include "karplus_strong.h"
+#include <stdio.h>
+#include <errno.h>
+#include <unistd.h>
+#include <stdlib.h>
+#include <string.h>
+#include <math.h>
+
+#include<lib/karplus_strong.h>
+#include<lib/utils.h>
+
 
 void initialize_string(string* s, float frequency, int sample_rate)
 {

@@ -9,7 +9,7 @@
 #include <jack/midiport.h>
 #include <time.h>
 
-#include "karplus_strong.h"
+#include<lib/karplus_strong.h>
 
 jack_port_t *input_port;
 jack_port_t *output_port;
@@ -37,7 +37,6 @@ int process(jack_nframes_t nframes, void *arg)
 	void* port_buf = jack_port_get_buffer(input_port, nframes);
 	jack_default_audio_sample_t *out = (jack_default_audio_sample_t *) jack_port_get_buffer (output_port, nframes);
 	jack_midi_event_t in_event;
-	jack_nframes_t event_index = 0;
 	jack_nframes_t event_count = jack_midi_get_event_count(port_buf);
 	/*
 	in_event.time is not considered yet
@@ -71,7 +70,7 @@ int process(jack_nframes_t nframes, void *arg)
 				break;
 		}
 	}
-	for(int i; i < nframes; i++)
+	for(int i = 0; i < nframes; i++)
 	{
 		out[i] = 0;
 	}
@@ -92,6 +91,10 @@ int process(jack_nframes_t nframes, void *arg)
 					stop_string(&strings[i]);
 				}
 				
+				break;
+			case NOTE_OFF:
+				break;
+			default:
 				break;
 		}
 	}

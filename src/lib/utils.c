@@ -1,4 +1,7 @@
-#include "utils.h"
+#include <stdlib.h>
+#include <stdio.h>
+
+#include<lib/utils.h>
 
 float mix_samples(float a, float b)
 {
