@@ -1,31 +1,20 @@
 #ifndef _KARPLUS_STRONG_H
 #define _KARPLUS_STRONG_H
 
-enum string_state
-{
-	NOTE_OFF,
-	NOTE_ON,
-	SUSTAIN
-};
+#define LOW_PASS_FILTER_FACTOR 0.5
 
-typedef struct string string;
+#include <lib/dsp.h>
 
-struct string 
-{
-	int delay_line_length; 
-	int delay_line_out;
-	float* delay_line;
-	enum string_state state;
-};
+typedef struct karplus_strong{
+	delay *delay;
+	one_zero *low_pass_filter;
+}karplus_strong;
 
-void initialize_string(string* s, float frequency, int sample_rate);
+karplus_strong *new_karplus_strong(unsigned int length);
 
-void get_string_samples(float* buffer, string* s, int n_samples);
+float process_karplus_strong(karplus_strong *k);
 
-void excite_string(string* s, int velocity);
+void excite_karplus_strong(karplus_strong *k, float velocity);
 
-void stop_string(string* s);
-
-void sustain_string(string* s);
 
 #endif

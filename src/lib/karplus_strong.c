@@ -5,44 +5,27 @@
 #include <string.h>
 #include <math.h>
 
-#include<lib/karplus_strong.h>
-#include<lib/utils.h>
+#include <lib/karplus_strong.h>
+#include <lib/utils.h>
 
-
-void initialize_string(string* s, float frequency, int sample_rate)
-{
-	
-	s->delay_line_length = floor((float)sample_rate / (float)frequency);
-	s->delay_line = (float*)malloc(s->delay_line_length * sizeof(float));
-	s->state = NOTE_OFF;
-	
+karplus_strong *new_karplus_strong(unsigned int length){
+	karplus_strong *k = (karplus_strong*)malloc(sizeof(karplus_strong));
+	k->delay = new_delay(length);
+	k->low_pass_filter = new_one_zero(LOW_PASS_FILTER_FACTOR, LOW_PASS_FILTER_FACTOR);
+	connect_dsp_elements((dsp_element*)k->delay, (dsp_element*)k->low_pass_filter);
+	connect_dsp_elements((dsp_element*)k->low_pass_filter, (dsp_element*)k->delay);
+	return k;
 }
 
-void get_string_samples(float* buffer, string* s, int n_samples)
-{
-	for(int i = 0; i < n_samples; i++)
-	{
-		buffer[i] += s->delay_line[s->delay_line_out];
-  		s->delay_line[s->delay_line_out] = (s->delay_line[s->delay_line_out] / 2) + (s->delay_line[(s->delay_line_out + 1) % s->delay_line_length] / 2);
-		s->delay_line_out = (s->delay_line_out + 1) % s->delay_line_length;
+float process_karplus_strong(karplus_strong *k){
+	float output = *k->delay->output;
+	process_delay(k->delay);
+	process_one_zero(k->low_pass_filter);
+	return output;
+}
+
+void excite_karplus_strong(karplus_strong *k, float velocity){
+	for(unsigned int i = 0; i < k->delay->length; i++){
+		k->delay->buffer[i] = random_float(velocity);
 	}
-}
-
-void excite_string(string* s, int velocity)
-{
-	s->state = NOTE_ON;
-	for(int i = 0; i < s->delay_line_length; i++)
-	{
-		s->delay_line[i] = random_float((float)velocity / 127.0);
-	}
-	s->delay_line_out = 0;
-}
-
-void stop_string(string* s)
-{
-	s->state = NOTE_OFF;
-}
-
-void sustain_string(string* s){
-	s->state = SUSTAIN;
 }
