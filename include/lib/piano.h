@@ -1,7 +1,7 @@
 #ifndef _PIANO_H
 #define _PIANO_H
 
-#include <lib/karplus_strong.h>
+#include <lib/waveguide.h>
 
 enum string_state
 {
@@ -12,7 +12,7 @@ enum string_state
 
 typedef struct string 
 {
-	karplus_strong *w;
+	waveguide *w;
 	enum string_state state;
 }string;
 
